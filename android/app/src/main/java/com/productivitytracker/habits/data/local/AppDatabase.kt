@@ -6,10 +6,12 @@ import androidx.room.migration.Migration
 import androidx.sqlite.db.SupportSQLiteDatabase
 import com.productivitytracker.habits.data.local.dao.CategoryDao
 import com.productivitytracker.habits.data.local.dao.DayTaskDao
+import com.productivitytracker.habits.data.local.dao.GoalDao
 import com.productivitytracker.habits.data.local.dao.HabitDao
 import com.productivitytracker.habits.data.local.dao.HabitLogDao
 import com.productivitytracker.habits.data.local.entity.CategoryEntity
 import com.productivitytracker.habits.data.local.entity.DayTaskEntity
+import com.productivitytracker.habits.data.local.entity.GoalEntity
 import com.productivitytracker.habits.data.local.entity.HabitEntity
 import com.productivitytracker.habits.data.local.entity.HabitLogEntity
 
@@ -37,14 +39,35 @@ val MIGRATION_1_2 = object : Migration(1, 2) {
     }
 }
 
+val MIGRATION_2_3 = object : Migration(2, 3) {
+    override fun migrate(db: SupportSQLiteDatabase) {
+        db.execSQL(
+            """
+            CREATE TABLE IF NOT EXISTS goals (
+                id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
+                name TEXT NOT NULL,
+                period TEXT NOT NULL,
+                metric TEXT NOT NULL,
+                targetValue INTEGER NOT NULL,
+                categoryName TEXT,
+                habitId INTEGER,
+                archived INTEGER NOT NULL
+            )
+            """.trimIndent(),
+        )
+        db.execSQL("CREATE INDEX IF NOT EXISTS index_goals_habitId ON goals(habitId)")
+    }
+}
+
 @Database(
     entities = [
         CategoryEntity::class,
         HabitEntity::class,
         HabitLogEntity::class,
         DayTaskEntity::class,
+        GoalEntity::class,
     ],
-    version = 2,
+    version = 3,
     exportSchema = false,
 )
 abstract class AppDatabase : RoomDatabase() {
@@ -52,4 +75,5 @@ abstract class AppDatabase : RoomDatabase() {
     abstract fun habitDao(): HabitDao
     abstract fun habitLogDao(): HabitLogDao
     abstract fun dayTaskDao(): DayTaskDao
+    abstract fun goalDao(): GoalDao
 }

@@ -26,7 +26,9 @@ import androidx.navigation.navArgument
 import com.productivitytracker.habits.ui.screens.HabitDetailScreen
 import com.productivitytracker.habits.ui.screens.HabitFormScreen
 import com.productivitytracker.habits.ui.screens.HabitsScreen
-import com.productivitytracker.habits.ui.screens.StatsScreen
+import com.productivitytracker.habits.ui.screens.DashboardScreen
+import com.productivitytracker.habits.ui.screens.GoalFormScreen
+import com.productivitytracker.habits.ui.screens.GoalsScreen
 import com.productivitytracker.habits.ui.screens.TodayScreen
 import com.productivitytracker.habits.ui.screens.planner.CompareScreen
 import com.productivitytracker.habits.ui.screens.planner.LogScreen
@@ -38,7 +40,12 @@ sealed class Screen(val route: String) {
     data object Plan : Screen("plan")
     data object Log : Screen("log")
     data object Compare : Screen("compare")
-    data object Stats : Screen("stats")
+    data object Dashboard : Screen("dashboard")
+    data object Goals : Screen("goals")
+    data object GoalForm : Screen("goal_form?goalId={goalId}") {
+        fun createRoute(goalId: Long? = null) =
+            if (goalId == null) "goal_form?goalId=-1" else "goal_form?goalId=$goalId"
+    }
     data object Habits : Screen("habits")
     data object HabitForm : Screen("habit_form?habitId={habitId}") {
         fun createRoute(habitId: Long? = null) =
@@ -60,7 +67,7 @@ private val bottomTabs = listOf(
     BottomTab(Screen.Plan, "Plan", Icons.Default.EventNote),
     BottomTab(Screen.Log, "Log", Icons.Default.EditNote),
     BottomTab(Screen.Compare, "Compare", Icons.Default.CompareArrows),
-    BottomTab(Screen.Stats, "Stats", Icons.Default.BarChart),
+    BottomTab(Screen.Dashboard, "Dashboard", Icons.Default.BarChart),
 )
 
 @Composable
@@ -115,10 +122,33 @@ fun AppNavHost() {
             composable(Screen.Compare.route) {
                 CompareScreen()
             }
-            composable(Screen.Stats.route) {
-                StatsScreen(
-                    onHabitClick = { navController.navigate(Screen.HabitDetail.createRoute(it)) },
+            composable(Screen.Dashboard.route) {
+                DashboardScreen(
                     onManageHabits = { navController.navigate(Screen.Habits.route) },
+                    onManageGoals = { navController.navigate(Screen.Goals.route) },
+                )
+            }
+            composable(Screen.Goals.route) {
+                GoalsScreen(
+                    onBack = { navController.popBackStack() },
+                    onAddGoal = { navController.navigate(Screen.GoalForm.createRoute()) },
+                    onEditGoal = { navController.navigate(Screen.GoalForm.createRoute(it)) },
+                )
+            }
+            composable(
+                route = Screen.GoalForm.route,
+                arguments = listOf(
+                    navArgument("goalId") {
+                        type = NavType.LongType
+                        defaultValue = -1L
+                    },
+                ),
+            ) { entry ->
+                val goalId = entry.arguments?.getLong("goalId")?.takeIf { it > 0 }
+                GoalFormScreen(
+                    goalId = goalId,
+                    onBack = { navController.popBackStack() },
+                    onSaved = { navController.popBackStack() },
                 )
             }
             composable(Screen.Habits.route) {

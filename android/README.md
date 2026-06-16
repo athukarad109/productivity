@@ -9,12 +9,16 @@ The existing Next.js web app in the repo root is unchanged. This Android app is 
 ### Habits (Phase 1)
 - **Today** — habits due today, mark done, track counts/duration
 - **Manage habits** — create, edit, schedules, reminders, streaks
-- **Stats** — 7-day completion rate, per-habit streaks, heatmap
 
 ### Daily planning (Phase 2)
 - **Plan** — schedule tasks with category, duration or time range
 - **Log** — record what actually happened; import from plan
 - **Compare** — planned vs actual, productivity score, missed/unplanned tasks
+
+### Goals & dashboard (Phase 3)
+- **Dashboard** — unified daily score (habits + plan/actual), weekly/monthly trends
+- **Category breakdown** — planned vs actual time per category
+- **Goals** — weekly/monthly targets: category time, habit completions, avg score %
 
 All data is stored locally in SQLite. No account or cloud required.
 
@@ -53,16 +57,16 @@ No signing secrets are required — this produces an unsigned **debug** APK suit
 | Plan | Plan my day |
 | Log | Log actual day |
 | Compare | Plan vs actual score |
-| Stats | Habit streaks & rates |
+| Dashboard | Unified trends, categories, goals |
 
-Habit management opens from the list icon on **Today** or **Manage habits** on **Stats**.
+Habit management: list icon on **Today**. Goals: **Dashboard** → **Goals**.
 
 ## Project structure
 
 ```
 app/src/main/java/com/productivitytracker/habits/
   data/          Room DB, repositories
-  domain/        Habits, comparison scoring, time formatting
+  domain/        Habits, scoring, dashboard, goals
   ui/            Compose screens, navigation, theme
   reminder/      WorkManager habit notifications
 ```
@@ -73,7 +77,7 @@ app/src/main/java/com/productivitytracker/habits/
 |-------|--------|
 | Habits, streaks, reminders | ✅ |
 | Plan, log, compare | ✅ |
-| Goals + unified dashboard | Planned |
+| Goals + unified dashboard | ✅ |
 | Widgets, focus timer, export | Planned |
 
 ## Permissions

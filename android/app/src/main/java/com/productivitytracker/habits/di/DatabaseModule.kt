@@ -5,8 +5,10 @@ import androidx.room.Room
 import com.productivitytracker.habits.data.local.AppDatabase
 import com.productivitytracker.habits.data.local.DatabaseSeeder
 import com.productivitytracker.habits.data.local.MIGRATION_1_2
+import com.productivitytracker.habits.data.local.MIGRATION_2_3
 import com.productivitytracker.habits.data.local.dao.CategoryDao
 import com.productivitytracker.habits.data.local.dao.DayTaskDao
+import com.productivitytracker.habits.data.local.dao.GoalDao
 import com.productivitytracker.habits.data.local.dao.HabitDao
 import com.productivitytracker.habits.data.local.dao.HabitLogDao
 import dagger.Module
@@ -36,7 +38,7 @@ object DatabaseModule {
         "productivity_tracker.db",
     )
         .addCallback(DatabaseSeeder.callback(scope))
-        .addMigrations(MIGRATION_1_2)
+        .addMigrations(MIGRATION_1_2, MIGRATION_2_3)
         .build()
 
     @Provides
@@ -50,4 +52,7 @@ object DatabaseModule {
 
     @Provides
     fun provideDayTaskDao(db: AppDatabase): DayTaskDao = db.dayTaskDao()
+
+    @Provides
+    fun provideGoalDao(db: AppDatabase): GoalDao = db.goalDao()
 }

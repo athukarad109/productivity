@@ -40,6 +40,15 @@ interface DayTaskDao {
     @Query("DELETE FROM day_tasks WHERE date = :date AND recordType = :recordType")
     suspend fun deleteAllForDate(date: String, recordType: String)
 
+    @Query(
+        """
+        SELECT * FROM day_tasks
+        WHERE date >= :fromDate AND date <= :toDate AND recordType = :recordType
+        ORDER BY date ASC
+        """,
+    )
+    suspend fun getBetween(fromDate: String, toDate: String, recordType: String): List<DayTaskEntity>
+
     @Transaction
     suspend fun replaceAllForDate(date: String, recordType: String, tasks: List<DayTaskEntity>) {
         deleteAllForDate(date, recordType)

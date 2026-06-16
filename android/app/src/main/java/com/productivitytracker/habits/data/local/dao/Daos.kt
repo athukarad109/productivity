@@ -93,6 +93,9 @@ interface HabitLogDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun upsert(log: HabitLogEntity): Long
 
+    @Query("SELECT * FROM habit_logs WHERE date >= :fromDate AND date <= :toDate")
+    suspend fun getBetween(fromDate: String, toDate: String): List<HabitLogEntity>
+
     @Query("DELETE FROM habit_logs WHERE habitId = :habitId AND date = :date")
     suspend fun deleteForHabitOnDate(habitId: Long, date: String)
 }
