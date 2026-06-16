@@ -1,0 +1,6 @@
+id,name,category,startTime,endTime,duration,notes
+mndwcl6mfu0u5ll9p2,"Deep work session 1 - 45 mins","Learning",,,45,"Preparing for the xAI interview. Step 1 - learn from gemini"
+mndwdxqhwrntzvlikp,"Deep work session 2 - 45 mins","Learning",,,45,"More study about AI specific security risks in high traffic prod env - K8s, Docker"
+mndweo2ankqws0atajd,"Deep work session 3 - Interview practice with claude","Learning",,,45,"Practice interview questions with Claude"
+mndwgj1ehgekpm5d3h,"Exercise","Exercise",,,60,"Run in the evening, do 30 Pushups, 20 squats, 20 leg rises, 30 crunches"
+mndwh9xbgj71361bx58,"RHO Auto work","Work",,,60,"Optional block if the work comes from RHO"

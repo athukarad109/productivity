@@ -3,7 +3,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import TaskForm from '@/components/TaskForm';
 import TaskCard from '@/components/TaskCard';
-import CategoryManager from '@/components/CategoryManager';
 import { Task } from '@/lib/types';
 
 function todayDate() {
@@ -24,24 +23,28 @@ function fmtMins(mins: number) {
   return `${Math.floor(mins / 60)}h ${mins % 60 > 0 ? mins % 60 + 'm' : ''}`.trim();
 }
 
-export default function PlanPage() {
+export default function LogPage() {
   const [date, setDate] = useState(todayDate());
   const [tasks, setTasks] = useState<Task[]>([]);
+  const [planned, setPlanned] = useState<Task[]>([]);
   const [categories, setCategories] = useState<string[]>([]);
   const [showForm, setShowForm] = useState(false);
   const [editingTask, setEditingTask] = useState<Task | null>(null);
-  const [showCatManager, setShowCatManager] = useState(false);
   const [saving, setSaving] = useState(false);
   const [saveMsg, setSaveMsg] = useState('');
+  const [importingPlanned, setImportingPlanned] = useState(false);
 
   const loadData = useCallback(async () => {
-    const [tasksRes, catsRes] = await Promise.all([
+    const [actualsRes, plansRes, catsRes] = await Promise.all([
+      fetch(`/api/actuals/${date}`),
       fetch(`/api/plans/${date}`),
       fetch('/api/categories'),
     ]);
-    const tasksData = await tasksRes.json();
+    const actualsData = await actualsRes.json();
+    const plansData = await plansRes.json();
     const catsData = await catsRes.json();
-    setTasks(tasksData.tasks || []);
+    setTasks(actualsData.tasks || []);
+    setPlanned(plansData.tasks || []);
     setCategories(catsData.categories || []);
   }, [date]);
 
@@ -49,7 +52,7 @@ export default function PlanPage() {
 
   async function saveTasks(newTasks: Task[]) {
     setSaving(true);
-    await fetch(`/api/plans/${date}`, {
+    await fetch(`/api/actuals/${date}`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ tasks: newTasks }),
@@ -79,23 +82,24 @@ export default function PlanPage() {
     saveTasks(newTasks);
   }
 
-  async function updateCategories(cats: string[]) {
-    setCategories(cats);
-    await fetch('/api/categories', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ categories: cats }),
-    });
+  function importFromPlan() {
+    if (planned.length === 0) return;
+    const toImport = planned.filter(p => !tasks.some(t => t.id === p.id || t.name === p.name));
+    const newTasks = [...tasks, ...toImport.map(t => ({ ...t, id: Date.now().toString(36) + Math.random().toString(36).slice(2) }))];
+    setTasks(newTasks);
+    saveTasks(newTasks);
+    setImportingPlanned(false);
   }
 
   const total = totalMinutes(tasks);
+  const plannedTotal = totalMinutes(planned);
 
   return (
     <div>
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
         <div>
-          <h1 className="text-2xl font-bold text-slate-100">Plan My Day</h1>
+          <h1 className="text-2xl font-bold text-slate-100">Log Actual Day</h1>
           <p className="text-slate-400 text-sm mt-1">{formatDateLabel(date)}</p>
         </div>
         <div className="flex items-center gap-3">
@@ -105,32 +109,46 @@ export default function PlanPage() {
             onChange={e => setDate(e.target.value)}
             className="bg-slate-800 border border-slate-600 rounded-lg px-3 py-2 text-sm text-slate-100 focus:outline-none focus:ring-2 focus:ring-indigo-500"
           />
-          <button
-            onClick={() => setShowCatManager(true)}
-            className="px-3 py-2 rounded-lg text-sm font-medium text-slate-400 hover:text-slate-200 hover:bg-slate-800 border border-slate-700 transition-colors"
-          >
-            ⚙️ Categories
-          </button>
         </div>
       </div>
+
+      {/* Import from Plan banner */}
+      {planned.length > 0 && tasks.length === 0 && (
+        <div className="bg-indigo-900/30 border border-indigo-500/30 rounded-xl p-4 mb-6 flex items-center justify-between gap-4">
+          <div>
+            <p className="text-sm font-medium text-indigo-300">You have a plan for today!</p>
+            <p className="text-xs text-indigo-400/80 mt-0.5">
+              {planned.length} tasks planned ({fmtMins(plannedTotal)}). Import as starting point?
+            </p>
+          </div>
+          <button
+            onClick={importFromPlan}
+            className="bg-indigo-600 hover:bg-indigo-500 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors whitespace-nowrap"
+          >
+            Import Plan
+          </button>
+        </div>
+      )}
 
       {/* Stats */}
       {tasks.length > 0 && (
         <div className="grid grid-cols-3 gap-4 mb-6">
           <div className="bg-slate-800 rounded-xl p-4 border border-slate-700 text-center">
             <div className="text-2xl font-bold text-indigo-400">{tasks.length}</div>
-            <div className="text-xs text-slate-400 mt-1">Tasks Planned</div>
+            <div className="text-xs text-slate-400 mt-1">Tasks Logged</div>
           </div>
           <div className="bg-slate-800 rounded-xl p-4 border border-slate-700 text-center">
             <div className="text-2xl font-bold text-emerald-400">{fmtMins(total)}</div>
-            <div className="text-xs text-slate-400 mt-1">Total Time</div>
+            <div className="text-xs text-slate-400 mt-1">Total Logged</div>
           </div>
-          <div className="bg-slate-800 rounded-xl p-4 border border-slate-700 text-center">
-            <div className="text-2xl font-bold text-amber-400">
-              {new Set(tasks.map(t => t.category)).size}
+          {plannedTotal > 0 && (
+            <div className="bg-slate-800 rounded-xl p-4 border border-slate-700 text-center">
+              <div className="text-2xl font-bold text-amber-400">
+                {Math.round((total / plannedTotal) * 100)}%
+              </div>
+              <div className="text-xs text-slate-400 mt-1">vs Planned</div>
             </div>
-            <div className="text-xs text-slate-400 mt-1">Categories</div>
-          </div>
+          )}
         </div>
       )}
 
@@ -140,11 +158,11 @@ export default function PlanPage() {
           onClick={() => setShowForm(true)}
           className="w-full bg-slate-800 hover:bg-slate-750 border border-dashed border-slate-600 hover:border-indigo-500 rounded-xl p-4 text-slate-400 hover:text-indigo-400 text-sm font-medium transition-all flex items-center justify-center gap-2 mb-4"
         >
-          <span className="text-lg">+</span> Add Task
+          <span className="text-lg">+</span> Log a Task
         </button>
       )}
 
-      {/* Task Form - Add */}
+      {/* Task Form */}
       {showForm && !editingTask && (
         <div className="mb-4">
           <TaskForm
@@ -159,9 +177,9 @@ export default function PlanPage() {
       <div className="space-y-3">
         {tasks.length === 0 && !showForm ? (
           <div className="text-center py-16 text-slate-500">
-            <div className="text-5xl mb-4">📋</div>
-            <p className="text-lg font-medium text-slate-400">No tasks planned yet</p>
-            <p className="text-sm mt-1">Click &quot;Add Task&quot; to start planning your day</p>
+            <div className="text-5xl mb-4">✅</div>
+            <p className="text-lg font-medium text-slate-400">Nothing logged yet</p>
+            <p className="text-sm mt-1">Log what you actually did today</p>
           </div>
         ) : (
           tasks.map(task =>
@@ -191,15 +209,6 @@ export default function PlanPage() {
         <div className="fixed bottom-6 right-6 bg-slate-800 border border-slate-600 rounded-xl px-4 py-2 text-sm text-slate-200 shadow-lg">
           {saving ? '💾 Saving...' : '✅ ' + saveMsg}
         </div>
-      )}
-
-      {/* Category Manager */}
-      {showCatManager && (
-        <CategoryManager
-          categories={categories}
-          onUpdate={updateCategories}
-          onClose={() => setShowCatManager(false)}
-        />
       )}
     </div>
   );

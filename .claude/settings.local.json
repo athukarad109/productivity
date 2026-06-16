@@ -1,7 +1,20 @@
 {
   "permissions": {
     "allow": [
-      "Bash(npx create-next-app@latest . --typescript --tailwind --app --no-src-dir --import-alias \"@/*\" --yes)"
+      "Bash(npx create-next-app@latest . --typescript --tailwind --app --no-src-dir --import-alias \"@/*\" --yes)",
+      "Bash(npm install:*)",
+      "Bash(npx tsc:*)",
+      "Bash(npm run:*)",
+      "Bash(curl -s http://localhost:3000/api/categories)",
+      "Bash(curl -s http://localhost:3000/api/plans/2026-03-31)",
+      "Bash(curl -s http://localhost:3000/api/actuals/2026-03-31)",
+      "Bash(curl -s \"http://localhost:3000/api/dashboard?mode=weekly&date=2026-03-31\")",
+      "Bash(curl -s -X POST http://localhost:3000/api/plans/2026-03-31 -H \"Content-Type: application/json\" -d '{\"\"tasks\"\":[{\"\"id\"\":\"\"test1\"\",\"\"name\"\":\"\"Morning workout\"\",\"\"category\"\":\"\"Exercise\"\",\"\"startTime\"\":\"\"07:00\"\",\"\"endTime\"\":\"\"08:00\"\",\"\"duration\"\":60,\"\"notes\"\":\"\"\"\"}]}')",
+      "Bash(curl -s -X POST http://localhost:3000/api/actuals/2026-03-31 -H \"Content-Type: application/json\" -d '{\"\"tasks\"\":[{\"\"id\"\":\"\"test2\"\",\"\"name\"\":\"\"Morning workout\"\",\"\"category\"\":\"\"Exercise\"\",\"\"startTime\"\":\"\"07:00\"\",\"\"endTime\"\":\"\"07:45\"\",\"\"duration\"\":45,\"\"notes\"\":\"\"Felt tired\"\"}]}')",
+      "Bash(curl -s -X POST http://localhost:3000/api/categories -H \"Content-Type: application/json\" -d '{\"\"categories\"\":[\"\"Work\"\",\"\"Learning\"\",\"\"Exercise\"\",\"\"Personal\"\",\"\"Health\"\",\"\"Social\"\",\"\"Creative\"\",\"\"Admin\"\",\"\"Deep Work\"\"]}')",
+      "Read(//tmp/**)",
+      "Bash(taskkill /F /IM node.exe)",
+      "Bash(taskkill //F //IM node.exe)"
     ]
   }
 }
