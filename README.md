@@ -1,64 +1,101 @@
 # Productivity Tracker
 
-A personal daily productivity tracker built with Next.js 14. Plan your day, log what actually happened, compare planned vs actual, and visualize trends over time.
+A personal productivity and habit tracking system. Plan your day, log what actually happened, track habits and streaks, set weekly/monthly goals, and see unified progress over time.
 
-## Features
+This repository contains two apps:
 
-- **Plan My Day** — Add tasks with name, category, time range or duration. Manage custom categories. Auto-saves to CSV.
-- **Log Actual Day** — Log what you actually did. Import from your plan as a starting point.
-- **Daily Comparison** — Side-by-side planned vs actual with a productivity score, missed tasks, and unplanned tasks.
-- **Dashboard** — Weekly/monthly charts: productivity score over time, planned vs actual minutes, and category breakdown.
+| App | Location | Status |
+|-----|----------|--------|
+| **Android** (native, offline-first) | [`android/`](android/) | Primary — habits, planning, goals, dashboard |
+| **Web** (Next.js) | repo root | Legacy companion — plan/log/compare via browser |
 
-## Getting Started
+For **how the Android app works** and **setup instructions** (Android Studio, CI APK install), see **[android/README.md](android/README.md)**.
+
+---
+
+## Android app (recommended)
+
+The native Android app stores everything locally on your device (SQLite). No account or internet required.
+
+### What it does
+
+- **Habits** — daily check-ins, streaks, schedules, optional reminders
+- **Plan / Log** — time-block your day and record what you actually did
+- **Compare** — productivity score (planned vs actual), missed and unplanned tasks
+- **Dashboard** — unified score, weekly/monthly trends, category breakdown
+- **Goals** — targets for category time, habit completions, or average score
+
+### Quick setup
+
+**From source (Android Studio)**
 
 ```bash
+git clone <your-repo-url>
+cd productivity_tracker/android
+```
+
+Open the `android/` folder in Android Studio, sync Gradle, run on a device or emulator (API 26+).
+
+**From GitHub (no build tools)**
+
+Push to GitHub → **Actions** → **Build Android APK** → download `app-debug.apk` from artifacts.
+
+Full details: [android/README.md](android/README.md)
+
+---
+
+## Web app (optional)
+
+A browser-based version that saves data as CSV files on the machine running the dev server.
+
+### Features
+
+- **Plan My Day** — tasks with category, duration or time range
+- **Log Actual Day** — log work; import from plan
+- **Daily Comparison** — productivity score, missed/unplanned tasks
+- **Dashboard** — weekly/monthly charts
+
+### Setup
+
+```bash
+npm install
 npm run dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) in your browser.
+Open [http://localhost:3000](http://localhost:3000).
 
-## Data Storage
-
-All data is stored locally as CSV files and JSON:
+### Data storage (web only)
 
 ```
 data/
   plans/          # One CSV per day: data/plans/2026-03-30.csv
   actuals/        # One CSV per day: data/actuals/2026-03-30.csv
-  categories.json # Your custom categories list
+  categories.json # Custom categories
 ```
 
-You can open any CSV in Excel/Google Sheets. The format is:
+CSV format: `id,name,category,startTime,endTime,duration,notes`
+
+The web and Android apps do **not** sync with each other.
+
+---
+
+## Tech stack
+
+| Android | Web |
+|---------|-----|
+| Kotlin, Jetpack Compose, Room, Hilt | Next.js 14, Tailwind, Recharts |
+| Offline SQLite | Local CSV via API routes |
+
+---
+
+## Repository layout
+
 ```
-id,name,category,startTime,endTime,duration,notes
-```
-
-## Tech Stack
-
-- **Next.js 14** (App Router)
-- **Tailwind CSS**
-- **Recharts** for charts
-- **Node.js fs** for local CSV read/write via API routes
-
-## Project Structure
-
-```
-app/
-  page.tsx              # Plan My Day
-  log/page.tsx          # Log Actual Day
-  compare/page.tsx      # Daily Comparison
-  dashboard/page.tsx    # Dashboard with charts
-  api/
-    plans/[date]/       # GET/POST plan for a date
-    actuals/[date]/     # GET/POST actuals for a date
-    categories/         # GET/POST category list
-    dashboard/          # GET aggregated stats
-components/
-  NavBar.tsx
-  TaskForm.tsx
-  TaskCard.tsx
-  CategoryManager.tsx
-lib/
-  types.ts              # Shared TypeScript types
-  csv.ts                # CSV serialization utilities
+productivity_tracker/
+  android/              # Native Android app (see android/README.md)
+  app/                  # Next.js pages (web)
+  components/           # Web UI components
+  lib/                  # Web types & CSV utilities
+  data/                 # Web local data (CSV/JSON)
+  .github/workflows/    # Android APK CI build
 ```
